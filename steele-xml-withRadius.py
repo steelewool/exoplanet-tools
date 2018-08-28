@@ -88,15 +88,12 @@ for file in os.listdir('xml_files'):
             if planet.findtext ('istransiting') == '1':
 
                 if star.findtext('magV') != None:
-#                    print 'star.magV           : ', star.findtext('magV')
                     mag = star.findtext('magV')
                 else:
                     if star.findtext('magB') != None:
-#                        print 'star.magB      : ', star.findtext('magB')
                         mag = star.findtext('magB')
                     else:
                         if star.findtext('magJ') != None:
-#                            print 'star.magJ             : ', star.findtext('magJ')
                             mag = star.findtext('magJ')
 
                 planetPeriod = planet.findtext('period')
@@ -113,8 +110,15 @@ for file in os.listdir('xml_files'):
 
                         transitTime = Time(transitTimeBJD, format = 'jd', scale='utc')
 
+#                        print 'transitTimeBJD     : ', transitTimeBJD
+#                        print 'transitTime        : ', transitTime
+#                        print 'now.jd             : ', now.jd
+#                        print 'The now.jd is different that what I saw in computation on the web.'
+                        
                         delta  = now.jd - transitTimeBJD;
-                
+
+#                        print 'delta              : ', delta
+ 
                         revolutionCount = delta / planetPeriod
 
                         intRevolutionCount = int(revolutionCount) + 1
@@ -124,13 +128,21 @@ for file in os.listdir('xml_files'):
 
                         daysToTransit = nextTransit - now.jd
 
+#                        print 'nextTransitTime    : ', nextTransitTime
+#                        print 'daysToTransit      : ', daysToTransit
+
 #
 # Change the time to PST by subtracting 8 hours from the UTC time
 #
 
-                        nextTransitTimePST = nextTransit - (1.0/24.0*8.0)
+                        nextTransitTimePST = nextTransit - (1.0/24.0*7.0)
                         nTTPST = Time (nextTransitTimePST, format='jd', scale='utc')
 
+#                        print 'nextTransitTimePST      : ', nextTransitTimePST
+#                        print 'nTTPST                  : ', nTTPST
+#                        print 'nTTPST.jd               : ', nTTPST.jd
+#                        print 'nTTPST.fits             : ', nTTPST.fits
+                        
                         starRadius   = star.findtext('radius')
                         if (starRadius == None):
                             starRadius = float(0.0)
@@ -155,6 +167,8 @@ for file in os.listdir('xml_files'):
                         b = nowPST.jd + 1
                         c = a < b
 
+# d start off as false and is det to true if the time is in the specifed time range
+
                         d = False
                         if nTTPST > rangeTime[0]:
                             if nTTPST < rangeTime[1]:
@@ -165,36 +179,59 @@ for file in os.listdir('xml_files'):
                         observingPosition = EarthLocation(lat=34*u.deg, lon=-118*u.deg, height=500*u.m)  
 
                         observingNextTransitTime = Time(nextTransitTime.fits)
-                        
-                        if (float(mag) < 11) and d and (planetStarAreaRatio >= 0.01):
+
+
+# Eliminate objects based on
+# a) magnitude of the star must be great the 11th magnitude,
+# b) planetStarRation at least 0.01,
+# c) variable 'd' (poorly named) is not true, that is the object will be eliminated if the transit is
+#    not within the specified time range
+# d) altitude of the object is not at least 10 degrees above the horizon
+
+# Still need to only output if the transit happens at night.
+
+                        aa = AltAz(location=observingPosition, obstime=observingNextTransitTime)
+
+                        ra = root.findtext('rightascension')
+                        dec = root.findtext('declination')
+                            
+                        raHrMinSec = ra[0:2] + 'h' + ra[3:5] + 'm' + ra[6:8] + 's'
+                        decDegMinSec = dec[0:3] + 'd' + dec[4:6] + 'm' + dec[8:10] + 's'
+                            
+                        skyCoord = SkyCoord (raHrMinSec + ' ' + decDegMinSec, frame='icrs')
+
+                        altAzi = skyCoord.transform_to(AltAz(obstime=observingNextTransitTime,location=observingPosition))
+
+# Looking for hour of transit (PST). For now day time is between 06 and 17 hours. Night would be defined
+# as true if we are not in this range:
+
+                        hour = nTTPST.fits[11:13];
+#                        print 'hour of transit : ', nTTPST.fits[11:13]
+#                        print 'hour            : ', hour
+                        if (hour > '06' and hour < '17'):
+                            night = False
+                        else:
+                            night = True
+#                        print 'night           : ', night    
+
+                        if (float(mag) < 11) and d and (planetStarAreaRatio >= 0.01) and (altAzi.alt.degree > 20) and (night):
                             count = count + 1
 
                             print '------------------'
-                            print 'observingPosition     : ', observingPosition
+#                            print 'observingPosition     : ', observingPosition
                             print 'observingNextTransitTime: ', observingNextTransitTime
                             
-                            aa = AltAz(location=observingPosition, obstime=observingNextTransitTime)
-                            print 'aa    : ', aa
+#                            print 'aa    : ', aa
 
-                            print 'ra dec:', root.findtext('rightascension')+' '+root.findtext('declination')
+#                            print 'ra dec:', root.findtext('rightascension')+' '+root.findtext('declination')
                             # skyCoord = SkyCoord ('05h04m20s -06d13m47s', frame='icrs')
 
-                            ra = root.findtext('rightascension')
-                            dec = root.findtext('declination')
-                            
-                            raHrMinSec = ra[0:2] + 'h' + ra[3:5] + 'm' + ra[6:8] + 's'
-                            decDegMinSec = dec[0:3] + 'd' + dec[4:6] + 'm' + dec[8:10] + 's'
-                            
                             print'raHrMinSec  : ', raHrMinSec
                             print'decDegMinSec: ', decDegMinSec
                             
-                            skyCoord = SkyCoord (raHrMinSec + ' ' + decDegMinSec, frame='icrs')
-
-                            print 'skyCoord: ', skyCoord
+#                            print 'skyCoord: ', skyCoord
                             
-                            altAzi = skyCoord.transform_to(AltAz(obstime=observingNextTransitTime,location=observingPosition))
-
-                            print 'altAzi: ', altAzi
+#                            print 'altAzi: ', altAzi
                             print 'azi   : ', altAzi.az
                             print 'alt   : ', altAzi.alt
                             print

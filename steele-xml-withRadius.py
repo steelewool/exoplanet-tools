@@ -27,7 +27,7 @@ import cmath
 import commands
 commands.getstatusoutput ('ls')
 commands.getstatusoutput ('rm -rf xml_files')
-commands.getstatusoutput('mkdir xml_files')
+commands.getstatusoutput ('mkdir xml_files')
 commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalogue/systems/* .;cd ..')
 commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalgue//systems_kepler/* .;cd ..')
 
@@ -65,7 +65,7 @@ now         = Time (dateTimeUTC, scale='utc')
 
 # For testing hardcore a date/time range
 
-observingRange = ['2018-08-24T18:00:00','2018-09-03T23:00:00']
+observingRange = ['2018-08-28T18:00:00','2018-10-31T23:00:00']
 rangeTime = Time(observingRange, format='isot', scale='utc')
 
 for file in os.listdir('xml_files'):
@@ -187,7 +187,7 @@ for file in os.listdir('xml_files'):
 # c) variable 'd' (poorly named) is not true, that is the object will be eliminated if the transit is
 #    not within the specified time range
 # d) altitude of the object is not at least 10 degrees above the horizon
-
+# e) transit happens during daylight hours, between 4 & 18 time.
 # Still need to only output if the transit happens at night.
 
                         aa = AltAz(location=observingPosition, obstime=observingNextTransitTime)
@@ -206,73 +206,51 @@ for file in os.listdir('xml_files'):
 # as true if we are not in this range:
 
                         hour = nTTPST.fits[11:13];
-#                        print 'hour of transit : ', nTTPST.fits[11:13]
-#                        print 'hour            : ', hour
-                        if (hour > '06' and hour < '17'):
+                        if (hour > '04' and hour < '17'):
                             night = False
                         else:
                             night = True
-#                        print 'night           : ', night    
 
                         if (float(mag) < 11) and d and (planetStarAreaRatio >= 0.01) and (altAzi.alt.degree > 20) and (night):
                             count = count + 1
 
                             print '------------------'
-#                            print 'observingPosition     : ', observingPosition
-                            print 'observingNextTransitTime: ', observingNextTransitTime
-                            
-#                            print 'aa    : ', aa
-
-#                            print 'ra dec:', root.findtext('rightascension')+' '+root.findtext('declination')
-                            # skyCoord = SkyCoord ('05h04m20s -06d13m47s', frame='icrs')
-
-                            print'raHrMinSec  : ', raHrMinSec
-                            print'decDegMinSec: ', decDegMinSec
-                            
-#                            print 'skyCoord: ', skyCoord
-                            
-#                            print 'altAzi: ', altAzi
-                            print 'azi   : ', altAzi.az
-                            print 'alt   : ', altAzi.alt
-                            print
-                            print 'file name             : ', file
-                            print
-                            
-                            print 'dateTime              : ', dateTime
-                            print 'dateTimeUTC           : ', dateTimeUTC
-                            print
-                            print 'System name           : ', root.findtext('name')
-                            print 'System rightascension : ', root.findtext('rightascension')
-                            print 'System declination    : ', root.findtext('declination')
-                            print 'System magnitude      : ', mag
-                            print
-                            print 'Planet name           : ', planet.findtext('name')
-                            print'Planet period         : ', planet.findtext('period')
-                            print
-                            print 'transitTimeBJD        : ', transitTimeBJD
-                            print 'transitTime.jd        : ', transitTime.jd
-                            print 'transitTime.fits      : ', transitTime.fits
-                            print 'now                   : ', now
-                            print 'now jd                : ', now.jd
-                            print 'now fits              : ', now.fits
-                            print 'delta                 : ', delta
-                            print 'revolutionCount       : ', revolutionCount
-                            print 'int revoultionCount   : ', int(revolutionCount) + 1
-                            print 'nextTransit           : ', nextTransit
-                            print 'nextTransitTime       : ', nextTransitTime.fits
-                            print 'daysToTransit         : ', daysToTransit
-                            print 'nextTransitTimePST    : ', nextTransitTimePST
-                            print 'nTTPST.jd             : ', nTTPST.jd
-                            print 'nTTPST.fits           : ', nTTPST.fits, 'PST'
+                            print 'file name                : ', file
+                            print 'System name              : ', root.findtext('name')
+                            print 'Planet name              : ', planet.findtext('name')
+                            print 'Planet period            : ', planet.findtext('period')
+                            print 'System Right Ascension   :  ', root.findtext('rightascension')
+                            print 'System Declination       : ', root.findtext('declination')
+                            print 'System Magnitude         : ', mag
+                            print 'observingNextTransitTime : ', observingNextTransitTime
+                            print 'Azimuth                  : ', altAzi.az.degree
+                            print 'Altitude                 : ', altAzi.alt.degree
+                            print 'Days until transit       : ', daysToTransit
+                            print 'nTTPST.jd                : ', nTTPST.jd
+                            print 'nTTPST.fits              : ', nTTPST.fits, 'PST'
 
 
-                            print 'Star radius           : ', starRadius
-                            print 'Planet radius         : ', planetRadius
+#                            print 'transitTime.jd           : ', transitTime.jd
+#                            print 'transitTime.fits         : ', transitTime.fits
+#                            print 'nextTransit              : ', nextTransit
+#                            print 'dateTimeUTC              : ', dateTimeUTC
+#                            print 'now jd                   : ', now.jd
+#                            print 'now fits                 : ', now.fits
+#                            print 'delta                    : ', delta
+#                            print 'revolutionCount          : ', revolutionCount
+#                            print 'int revoultionCount      : ', int(revolutionCount) + 1
+#                            print 'raHrMinSec               : ', raHrMinSec
+#                            print 'decDegMinSec             : ', decDegMinSec
+#                            print 'transitTimeBJD           : ', transitTimeBJD
+#                            print 'now                      : ', now
+#                            print 'nextTransitTime          : ', nextTransitTime.fits
+#                            print 'nextTransitTimePST       : ', nextTransitTimePST
+#                            print 'Star radius              : ', starRadius
+#                            print 'Planet radius            : ', planetRadius
 
-                            print 'Planet/Star area ratio: ', planetStarAreaRatio
+                            print 'Planet/Star area ratio   : ', planetStarAreaRatio
                             
-                            print 'count: ', count
-                            print
+                            print 'count                    : ', count
                             
 
 

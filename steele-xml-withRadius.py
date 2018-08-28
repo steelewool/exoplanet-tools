@@ -22,14 +22,15 @@ import cmath
 
 # subprocess.call ('ls')
 # subprocess.call ('rm xml_files/*')
-# subprocess.call ('ln -s systems/*.xml xml_files/.')
+# subprocess.call ('ln -s open_exoplanet_catalogue/systems/*.xml xml_files/.')
 
 import commands
 commands.getstatusoutput ('ls')
 commands.getstatusoutput ('rm -rf xml_files')
 commands.getstatusoutput('mkdir xml_files')
-commands.getstatusoutput ('cd xml_files; ln -s ../systems/*.xml .;cd ..')
-commands.getstatusoutput ('cd xml_files; ln -s ../systems_kepler/*.xml .;cd ..')
+commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalogue/systems/* .;cd ..')
+commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalgue//systems_kepler/* .;cd ..')
+
 commands.getstatusoutput ('rm xml_files/WISE*.xml')
 commands.getstatusoutput ('rm xml_files/PSO?J318.5-22.xml')
 commands.getstatusoutput ('rm xml_files/CFBDSIR2149.xml')
@@ -43,7 +44,7 @@ commands.getstatusoutput ('rm xml_files/SDSS?J1110+0116.xml')
 # This creates a list of all of the files in systems and systems_kepler.
 # If I can get this working in the 'for file' I won't need the silly softlinks
 
-fileList = (os.listdir('systems') and os.listdir('systems_kepler'))
+fileList = (os.listdir('open_exoplanet_catalogue/systems') and os.listdir('open_exoplanet_catalogue/systems_kepler'))
 
 #worked: for file in (os.listdir('systems') and os.listdir('systems_kepler')):
 
@@ -64,7 +65,7 @@ now         = Time (dateTimeUTC, scale='utc')
 
 # For testing hardcore a date/time range
 
-observingRange = ['2018-08-24T18:00:00','2018-08-26T23:00:00']
+observingRange = ['2018-08-24T18:00:00','2018-09-03T23:00:00']
 rangeTime = Time(observingRange, format='isot', scale='utc')
 
 for file in os.listdir('xml_files'):

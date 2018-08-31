@@ -82,7 +82,7 @@ for file in os.listdir('xml_files'):
         try: 
             star = tree.find('.//star')
         except:
-            print'tree.find raised an exception'
+            print 'tree.find raised an exception'
             
         for planet in star.findall('.//planet'):
             if planet.findtext ('istransiting') == '1':

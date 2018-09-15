@@ -116,7 +116,7 @@ now         = Time (dateTimeUTC, scale='utc')
 
 # For testing hardwire a date/time range
 
-observingRange = ['2018-09-13T18:00:00','2018-09-16T06:00:00']
+observingRange = ['2018-09-14T18:00:00','2018-09-15T06:00:00']
 rangeTime = Time(observingRange, format='isot', scale='utc')
 
 for file in os.listdir('xml_files'):

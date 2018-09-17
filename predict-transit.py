@@ -6,29 +6,31 @@
 # funcionality will live in this code.
 
 
-import xml.etree.ElementTree as ET
-
-import fnmatch
-import os
-
-# astropy.time is not working on my Raspberry Pi. This is issue # 3
-# and more details can be found there.
+from astropy import units as u
 
 import astropy.time
 from astropy.time import Time
 from astropy.time import TimeDelta
 
-import time
-from datetime import date
-from datetime import datetime
-
 from astropy.coordinates import EarthLocation,SkyCoord
-from astropy import units as u
+from astropy.coordinates import AltAz
+from astropy.coordinates import EarthLocation,SkyCoord
 from astropy.coordinates import AltAz
 
 import cmath
-
 import commands
+
+from datetime import date
+from datetime import datetime
+
+
+import fnmatch
+
+import os
+
+import time
+
+import xml.etree.ElementTree as ET
 
 # This section of code creates a directory 'xml_files' and then creates
 # softlinks to the xml files. in the open_exoplanet_catalogue in the
@@ -39,30 +41,8 @@ import commands
 # I was to eventually develop a GUI for this program. But for now the
 # funcionality will live in this code.
 
-
-import xml.etree.ElementTree as ET
-
-import fnmatch
-import os
-
 # astropy.time is not working on my Raspberry Pi. This is issue # 3
 # and more details can be found there.
-
-import astropy.time
-from astropy.time import Time
-from astropy.time import TimeDelta
-
-import time
-from datetime import date
-from datetime import datetime
-
-from astropy.coordinates import EarthLocation,SkyCoord
-from astropy import units as u
-from astropy.coordinates import AltAz
-
-import cmath
-
-import commands
 
 # This section of code creates a directory 'xml_files' and then creates
 # softlinks to the xml files. in the open_exoplanet_catalogue in the
@@ -116,27 +96,39 @@ now         = Time (dateTimeUTC, scale='utc')
 
 # For testing hardwire a date/time range
 
-observingRange = ['2018-09-14T18:00:00','2018-09-15T06:00:00']
+observingRange = ['2018-09-15T18:00:00','2018-09-21T06:00:00']
 rangeTime = Time(observingRange, format='isot', scale='utc')
+
+# This reads into 'file' all of the files in the xml_files directory
 
 for file in os.listdir('xml_files'):
 
-    #    print file
+#    print file
     
 # Because of the way I set my the xml_files directory all of the files are xml files
+
+# This if statement may not in fact be necessary. Need to confirm this.
 
     if fnmatch.fnmatch(file, '*.xml'):
         
         tree = ET.parse ('xml_files/'+file)
         root = tree.getroot();
 
+# Look for a star field in the xml - if there isn't raise an exception. This
+# exception is not having in the current set of xml files.
+
         try: 
             star = tree.find('.//star')
         except:
             print'tree.find raised an exception'
-            
+
+# Look through all of the possible planets in a system.
+
         for planet in star.findall('.//planet'):
             if planet.findtext ('istransiting') == '1':
+
+# Get the magntiude of the star. Use the visual magnitude if it is available. If not, use
+# the 'B' magnitude and if that isn't available use the 'J' magnitude.
 
                 if star.findtext('magV') != None:
                     mag = star.findtext('magV')
@@ -157,22 +149,31 @@ for file in os.listdir('xml_files'):
 
                     if planet.findtext('transittime') != None:
 
-                        transitTimeBJD = float(planet.findtext('transittime'))
+# These two times, transitTimeBJD and transitTime are identical times. Need to pick out just
+# one for the code.
 
+                        transitTimeBJD = float(planet.findtext('transittime'))
                         transitTime = Time(transitTimeBJD, format = 'jd', scale='utc')
 
 #                        print 'transitTimeBJD     : ', transitTimeBJD
 #                        print 'transitTime        : ', transitTime
+                        
 #                        print 'now.jd             : ', now.jd
 #                        print 'The now.jd is different that what I saw in computation on the web.'
-                        
+
+# 'now' is the current time. Not sure why I'm using the current time and not the range of time
+# specified in the time range. It seems like this should be the start of the time range.
+
                         delta  = now.jd - transitTimeBJD;
 
-#                        print 'delta              : ', delta
- 
                         revolutionCount = delta / planetPeriod
 
                         intRevolutionCount = int(revolutionCount) + 1
+
+#                        print 'delta              : ', delta
+#                        print 'revolutionCount    : ', revolutionCount
+#                        print 'intRevolutionCount : ', intRevolutionCount
+                        
                         nextTransit = transitTimeBJD + (intRevolutionCount * planetPeriod)
 
                         nextTransitTime = Time (nextTransit, format ='jd', scale = 'utc');
@@ -181,6 +182,7 @@ for file in os.listdir('xml_files'):
 
 #                        print 'nextTransitTime    : ', nextTransitTime
 #                        print 'daysToTransit      : ', daysToTransit
+#                        print
 
 #
 # Change the time to PST by subtracting 8 hours from the UTC time
@@ -262,7 +264,7 @@ for file in os.listdir('xml_files'):
                         else:
                             night = True
 
-                        if (float(mag) < 11) and d and (planetStarAreaRatio >= 0.01) and (altAzi.alt.degree > 20) and (night):
+                        if (float(mag) < 12) and d and (planetStarAreaRatio >= 0.01) and (altAzi.alt.degree > 20) and (night):
                             count = count + 1
 
                             print '------------------'

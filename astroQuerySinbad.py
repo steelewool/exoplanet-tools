@@ -2,11 +2,32 @@ from astroquery.simbad import Simbad
 
 table = Simbad.query_object ('M *', wildcard=True, verbose=False, get_query_payload=False)
 
-table.pprint()
+print Simbad.list_votable_fields()
 
+print 'Attempt a query_object command'
+
+x=Simbad.query_object('M 1')
+x.pprint()
+
+print(x)
+
+# table.pprint()
+
+print table[0]
 print table[49]
 
-for x in table:
-    print x
+# Print the name of the columns
+
+print table.colnames
+
+#print the RA and Declination:
+
+print 'RA and Declination'
+
+print table[0]['RA']
+print table[0]['DEC']
+
+# for x in table:
+#    print x
 
 

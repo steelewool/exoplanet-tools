@@ -14,15 +14,12 @@ from astropy.time import TimeDelta
 
 from astropy.coordinates import EarthLocation,SkyCoord
 from astropy.coordinates import AltAz
-from astropy.coordinates import EarthLocation,SkyCoord
-from astropy.coordinates import AltAz
 
 import cmath
 import commands
 
 from datetime import date
 from datetime import datetime
-
 
 import fnmatch
 
@@ -229,7 +226,10 @@ for file in os.listdir('xml_files'):
 
 # e = sideral_time('apparent',longitude=None,model=None)
 
-                        observingPosition = EarthLocation(lat=34*u.deg, lon=-118*u.deg, height=500*u.m)  
+                        print 'lat: ', (34.0 + 47.0/60.0 + 38.0/3600.0)*u.deg
+                        
+                        observingPosition = EarthLocation(lat=34*u.deg+47*u.min+38*u.sec, lon=-118*u.deg, height=500*u.m)
+                        print 'observingPosition: ', observingPosition
 
                         observingNextTransitTime = Time(nextTransitTime.fits)
 

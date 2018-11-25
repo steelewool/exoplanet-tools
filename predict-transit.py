@@ -14,15 +14,13 @@ from astropy.time import TimeDelta
 
 from astropy.coordinates import EarthLocation,SkyCoord
 from astropy.coordinates import AltAz
-from astropy.coordinates import EarthLocation,SkyCoord
-from astropy.coordinates import AltAz
 
 import cmath
 import commands
 
+from datetime import timedelta
 from datetime import date
 from datetime import datetime
-
 
 import fnmatch
 
@@ -72,7 +70,8 @@ commands.getstatusoutput ('rm xml_files/SDSS?J1110+0116.xml')
 
 # As of 2018-08-29 the variable 'fileList' is NOT used in the program.
 
-fileList = (os.listdir('open_exoplanet_catalogue/systems') and os.listdir('open_exoplanet_catalogue/systems_kepler'))
+fileList = (os.listdir('open_exoplanet_catalogue/systems') and
+            os.listdir('open_exoplanet_catalogue/systems_kepler'))
 
 #worked: for file in (os.listdir('systems') and os.listdir('systems_kepler')):
 
@@ -94,15 +93,25 @@ nowPST      = Time (dateTime, scale='utc')
 dateTimeUTC = datetime.utcnow()
 now         = Time (dateTimeUTC, scale='utc')
 
-# For testing hardwire a date/time range
+# This will search for 2 days (timedelta(2))
 
-observingRange = ['2018-09-15T18:00:00','2018-09-21T06:00:00']
-rangeTime = Time(observingRange, format='isot', scale='utc')
+startTime = Time(datetime.now(), scale='utc')
+endTime   = Time(datetime.now()+timedelta(2), scale='utc')
+
+print 'startTime: ', startTime
+print 'endTime  : ', endTime
+
+observingMorningTime = '04'
+observingEveningTime = '17'
+
+minMagCutoff = 12.0
+minAltCutoff = 20.0
+minPlanetStarAreaRatio = 0.01
 
 # This reads into 'file' all of the files in the xml_files directory
 
 for file in os.listdir('xml_files'):
-
+    
 #    print file
     
 # Because of the way I set my the xml_files directory all of the files are xml files
@@ -188,7 +197,7 @@ for file in os.listdir('xml_files'):
 # Change the time to PST by subtracting 8 hours from the UTC time
 #
 
-                        nextTransitTimePST = nextTransit - (1.0/24.0*7.0)
+                        nextTransitTimePST = nextTransit - (1.0/24.0*8.0)
                         nTTPST = Time (nextTransitTimePST, format='jd', scale='utc')
 
 #                        print 'nextTransitTimePST      : ', nextTransitTimePST
@@ -223,13 +232,16 @@ for file in os.listdir('xml_files'):
 # d start off as false and is det to true if the time is in the specifed time range
 
                         d = False
-                        if nTTPST > rangeTime[0]:
-                            if nTTPST < rangeTime[1]:
+                        
+                        if nTTPST.jd > startTime.jd:
+                            if nTTPST.jd < endTime.jd:
                                 d = True
 
 # e = sideral_time('apparent',longitude=None,model=None)
 
-                        observingPosition = EarthLocation(lat=34*u.deg, lon=-118*u.deg, height=500*u.m)  
+                        observingPosition = EarthLocation(lat=34*u.deg,
+                                                          lon=-118*u.deg,
+                                                          height=500*u.m)  
 
                         observingNextTransitTime = Time(nextTransitTime.fits)
 
@@ -259,12 +271,14 @@ for file in os.listdir('xml_files'):
 # as true if we are not in this range:
 
                         hour = nTTPST.fits[11:13];
-                        if (hour > '04' and hour < '17'):
+
+                        if (hour > observingMorningTime and
+                            hour < observingEveningTime):
                             night = False
                         else:
                             night = True
-
-                        if (float(mag) < 12) and d and (planetStarAreaRatio >= 0.01) and (altAzi.alt.degree > 20) and (night):
+                        
+                        if (float(mag) < minMagCutoff) and d and (planetStarAreaRatio >= minPlanetStarAreaRatio) and (altAzi.alt.degree > minAltCutoff) and night:
                             count = count + 1
 
                             print '------------------'
@@ -281,7 +295,6 @@ for file in os.listdir('xml_files'):
                             print 'Days until transit       : ', daysToTransit
                             print 'nTTPST.jd                : ', nTTPST.jd
                             print 'nTTPST.fits              : ', nTTPST.fits, 'PST'
-
 
 #                            print 'transitTime.jd           : ', transitTime.jd
 #                            print 'transitTime.fits         : ', transitTime.fits

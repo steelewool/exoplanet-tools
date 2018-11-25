@@ -1,6 +1,11 @@
 from astroquery.simbad import Simbad
 
-table = Simbad.query_object ('M *', wildcard=True, verbose=False, get_query_payload=False)
+
+# works on linux:
+# table = Simbad.query_object ('M *', wildcard=True, verbose=False, get_query_payload=False)
+
+# works on Raspberry PI
+table = Simbad.query_object ('M *', wildcard=True, verbose=False)
 
 print Simbad.list_votable_fields()
 

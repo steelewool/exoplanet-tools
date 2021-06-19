@@ -5,7 +5,6 @@
 # I was to eventually develop a GUI for this program. But for now the
 # funcionality will live in this code.
 
-
 from astropy import units as u
 
 import astropy.time
@@ -39,8 +38,8 @@ import xml.etree.ElementTree as ET
 # I was to eventually develop a GUI for this program. But for now the
 # funcionality will live in this code.
 
-# astropy.time is not working on my Raspberry Pi. This is issue # 3
-# and more details can be found there.
+# astropy.time is not working on my Raspberry Pi.
+# This is issue # 3 and more details can be found there.
 
 # This section of code creates a directory 'xml_files' and then creates
 # softlinks to the xml files. in the open_exoplanet_catalogue in the
@@ -52,8 +51,12 @@ import xml.etree.ElementTree as ET
 commands.getstatusoutput ('ls')
 commands.getstatusoutput ('rm -rf xml_files')
 commands.getstatusoutput ('mkdir xml_files')
-commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalogue/systems/* .;cd ..')
-commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalgue//systems_kepler/* .;cd ..')
+
+# commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalogue/systems/* .;cd ..')
+# commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalogue/systems_kepler/* .;cd ..')
+
+commands.getstatusoutput ('cd xml_files; cp ../open_exoplanet_catalogue/systems/*        .;cd ..')
+commands.getstatusoutput ('cd xml_files; cp ../open_exoplanet_catalogue/systems_kepler/* .;cd ..')
 
 commands.getstatusoutput ('rm xml_files/WISE*.xml')
 commands.getstatusoutput ('rm xml_files/PSO?J318.5-22.xml')

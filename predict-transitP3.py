@@ -52,11 +52,11 @@ subprocess.getstatusoutput ('ls')
 subprocess.getstatusoutput ('rm -rf xml_files')
 subprocess.getstatusoutput ('mkdir xml_files')
 
-# subprocess.getstatusoutput ('cd xml_files; ln -s ../OpenExopolanetCatalogue/open_exoplanet_catalogue/systems/* .;cd ..')
-# subprocess.getstatusoutput ('cd xml_files; ln -s ../OpenExopolanetCatalogue/open_exoplanet_catalogue/systems_kepler/* .;cd ..')
+# subprocess.getstatusoutput ('cd xml_files; ln -s ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems/* .;cd ..')
+# subprocess.getstatusoutput ('cd xml_files; ln -s ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems_kepler/* .;cd ..')
 
-subprocess.getstatusoutput ('cd xml_files; cp ../open_exoplanet_catalogue/systems/*        .;cd ..')
-subprocess.getstatusoutput ('cd xml_files; cp ../open_exoplanet_catalogue/systems_kepler/* .;cd ..')
+subprocess.getstatusoutput ('cd xml_files; cp ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems/*       ;cd ..')
+subprocess.getstatusoutput ('cd xml_files; cp ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems_kepler/* .;cd ..')
 
 subprocess.getstatusoutput ('rm xml_files/EPIC?211901114.xml')
 subprocess.getstatusoutput ('rm xml_files/EPIC?201637175.xml')
@@ -68,6 +68,7 @@ subprocess.getstatusoutput ('rm xml_files/CFBDSIR2149.xml')
 subprocess.getstatusoutput ('rm xml_files/WISE?0855-0714.xml')
 subprocess.getstatusoutput ('rm xml_files/EPIC?204129699.xml')
 subprocess.getstatusoutput ('rm xml_files/EPIC?201637175.xml')
+subprocess.getstatusoutput ('rm xml_files/KOI-1192.xml')
 
 # This creates a list of all of the files in systems and systems_kepler.
 # If I can get this working in the 'for file' I won't need the silly
@@ -75,8 +76,7 @@ subprocess.getstatusoutput ('rm xml_files/EPIC?201637175.xml')
 
 # As of 2018-08-29 the variable 'fileList' is NOT used in the program.
 
-fileList = (os.listdir('open_exoplanet_catalogue/systems') and
-            os.listdir('open_exoplanet_catalogue/systems_kepler'))
+fileList = (os.listdir('xml_files'))
 
 # Count is the number of objects that have been identifed. The variable is
 # initialized to 0 here.

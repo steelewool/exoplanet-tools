@@ -15,7 +15,7 @@ from astropy.coordinates import EarthLocation,SkyCoord
 from astropy.coordinates import AltAz
 
 import cmath
-import commands
+import subprocess
 
 from datetime import timedelta
 from datetime import date
@@ -48,25 +48,27 @@ import xml.etree.ElementTree as ET
 # The other side benefit was that I could remove xml files that were
 # causing my program to crash.
 
-commands.getstatusoutput ('ls')
-commands.getstatusoutput ('rm -rf xml_files')
-commands.getstatusoutput ('mkdir xml_files')
+subprocess.getstatusoutput ('ls')
+subprocess.getstatusoutput ('rm -rf xml_files')
+subprocess.getstatusoutput ('mkdir xml_files')
 
-# commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalogue/systems/* .;cd ..')
-# commands.getstatusoutput ('cd xml_files; ln -s ../open_exoplanet_catalogue/systems_kepler/* .;cd ..')
+# subprocess.getstatusoutput ('cd xml_files; ln -s ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems/* .;cd ..')
+# subprocess.getstatusoutput ('cd xml_files; ln -s ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems_kepler/* .;cd ..')
 
-commands.getstatusoutput ('cd xml_files; cp ../open_exoplanet_catalogue/systems/*        .;cd ..')
-commands.getstatusoutput ('cd xml_files; cp ../open_exoplanet_catalogue/systems_kepler/* .;cd ..')
+subprocess.getstatusoutput ('cd xml_files; cp ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems/*       ;cd ..')
+subprocess.getstatusoutput ('cd xml_files; cp ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems_kepler/* .;cd ..')
 
-commands.getstatusoutput ('rm xml_files/WISE*.xml')
-commands.getstatusoutput ('rm xml_files/PSO?J318.5-22.xml')
-commands.getstatusoutput ('rm xml_files/CFBDSIR2149.xml')
-commands.getstatusoutput ('rm xml_files/KOI-2700.xml')
-commands.getstatusoutput ('rm xml_files/KIC?12557548.xml')
-commands.getstatusoutput ('rm xml_files/EPIC?204129699.xml')
-commands.getstatusoutput ('rm xml_files/EPIC?201637175.xml')
-commands.getstatusoutput ('rm xml_files/SIMP0136+0933.xml')
-commands.getstatusoutput ('rm xml_files/SDSS?J1110+0116.xml')
+subprocess.getstatusoutput ('rm xml_files/EPIC?211901114.xml')
+subprocess.getstatusoutput ('rm xml_files/EPIC?201637175.xml')
+subprocess.getstatusoutput ('rm xml_files/KIC?12557548.xml')
+subprocess.getstatusoutput ('rm xml_files/SDSS?J1110+0116.xml')
+subprocess.getstatusoutput ('rm xml_files/PSO?J318?5-22.xml')
+subprocess.getstatusoutput ('rm xml_files/SIMP0136+0933.xml')
+subprocess.getstatusoutput ('rm xml_files/CFBDSIR2149.xml')
+subprocess.getstatusoutput ('rm xml_files/WISE?0855-0714.xml')
+subprocess.getstatusoutput ('rm xml_files/EPIC?204129699.xml')
+subprocess.getstatusoutput ('rm xml_files/EPIC?201637175.xml')
+subprocess.getstatusoutput ('rm xml_files/KOI-1192.xml')
 
 # This creates a list of all of the files in systems and systems_kepler.
 # If I can get this working in the 'for file' I won't need the silly
@@ -74,8 +76,7 @@ commands.getstatusoutput ('rm xml_files/SDSS?J1110+0116.xml')
 
 # As of 2018-08-29 the variable 'fileList' is NOT used in the program.
 
-fileList = (os.listdir('open_exoplanet_catalogue/systems') and
-            os.listdir('open_exoplanet_catalogue/systems_kepler'))
+fileList = (os.listdir('xml_files'))
 
 # Count is the number of objects that have been identifed. The variable is
 # initialized to 0 here.
@@ -96,8 +97,8 @@ now         = Time (dateTimeUTC, scale='utc')
 startTime = Time(datetime.now(),              scale='utc')
 endTime   = Time(datetime.now()+timedelta(2), scale='utc')
 
-print 'startTime: ', startTime
-print 'endTime  : ', endTime
+print ('startTime: ', startTime)
+print ('endTime  : ', endTime)
 
 observingMorningTime = '04'
 observingEveningTime = '17'
@@ -110,7 +111,7 @@ minPlanetStarAreaRatio = input ('Enter minimum area ration : ')
 
 for file in os.listdir('xml_files'):
     
-#    print file
+#    print ("Debugging, file: ", file)
     
 # Because of the way I set my the xml_files directory all of the files
 # are xml files
@@ -128,7 +129,7 @@ for file in os.listdir('xml_files'):
         try: 
             star = tree.find('.//star')
         except:
-            print'tree.find raised an exception'
+            print ('tree.find raised an exception')
 
 # Look through all of the possible planets in a system.
 
@@ -147,7 +148,9 @@ for file in os.listdir('xml_files'):
                     else:
                         if star.findtext('magJ') != None:
                             mag = star.findtext('magJ')
-
+                        else:
+                            mag = 0.0
+                            
                 planetPeriod = planet.findtext('period')
 
                 # Look for a valid looking period, one that is not ''
@@ -289,40 +292,40 @@ for file in os.listdir('xml_files'):
                         else:
                             night = True
                         
-                        if (float(mag) < minMagCutoff)                     and \
+                        if (float(mag) < float(minMagCutoff))                     and \
                            d                                               and \
-                           (planetStarAreaRatio >= minPlanetStarAreaRatio) and \
-                           (altAzi.alt.degree > minAltCutoff)              and \
+                           (planetStarAreaRatio >= float(minPlanetStarAreaRatio)) and \
+                           (altAzi.alt.degree > float(minAltCutoff))              and \
                            night:
                             count = count + 1
 
-                            print '------------------'
-                            print 'file name                : ', file
-                            print 'System name              : ',  \
-                                  root.findtext('name')
-                            print 'Planet name              : ',  \
-                                   planet.findtext('name')
-                            print 'Planet period            : ',  \
-                                  planet.findtext('period')
-                            print 'System Right Ascension   :  ', \
-                                  root.findtext('rightascension')
-                            print 'System Declination       : ',  \
-                                  root.findtext('declination')
-                            print 'System Magnitude         : ',  \
-                                  mag
-                            print 'observingNextTransitTime : ',  \
-                                  observingNextTransitTime
-                            print 'Azimuth                  : ',  \
-                                  altAzi.az.degree
-                            print 'Altitude                 : ',  \
-                                  altAzi.alt.degree
-                            print 'Days until transit       : ',  \
-                                  daysToTransit
-                            print 'nTTPST.jd                : ',  \
-                                  nTTPST.jd
-                            print 'nTTPST.fits              : ',  \
-                                  nTTPST.fits, 'PST'
-                            print 'Planet/Star area ratio   : ',  \
-                                  planetStarAreaRatio
-                            print 'count                    : ',  \
-                                  count
+                            print ('------------------')
+                            print ('file name                : ', file)
+                            print ('System name              : ',  \
+                                   root.findtext('name'))
+                            print ('Planet name              : ',  \
+                                   planet.findtext('name'))
+                            print ('Planet period            : ',  \
+                                   planet.findtext('period'))
+                            print ('System Right Ascension   :  ', \
+                                   root.findtext('rightascension'))
+                            print ('System Declination       : ',  \
+                                   root.findtext('declination'))
+                            print ('System Magnitude         : ',  \
+                                   mag)
+                            print ('observingNextTransitTime : ',  \
+                                   observingNextTransitTime)
+                            print ('Azimuth                  : ',  \
+                                   altAzi.az.degree)
+                            print ('Altitude                 : ',  \
+                                   altAzi.alt.degree)
+                            print ('Days until transit       : ',  \
+                                   daysToTransit)
+                            print ('nTTPST.jd                : ',  \
+                                   nTTPST.jd)
+                            print ('nTTPST.fits              : ',  \
+                                   nTTPST.fits, 'PST')
+                            print ('Planet/Star area ratio   : ',  \
+                                   planetStarAreaRatio)
+                            print ('count                    : ',  \
+                                   count)

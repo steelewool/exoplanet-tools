@@ -6,11 +6,11 @@ table = Simbad.query_object ('M *', wildcard=True, verbose=False, get_query_payl
 
 table.pprint()
 
-print table[49]
+print (table[49])
 
 table = ExoplanetOrbitDatabase.query_planet ('Kepler-107b')
 
-print table
+print (table)
 
 from astroquery import open_exoplanet_catalogue as oec
 from astroquery.open_exoplanet_catalogue import findvalue

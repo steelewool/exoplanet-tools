@@ -55,10 +55,9 @@ subprocess.getstatusoutput ('mkdir xml_files')
 # subprocess.getstatusoutput ('cd xml_files; ln -s ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems/* .;cd ..')
 # subprocess.getstatusoutput ('cd xml_files; ln -s ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems_kepler/* .;cd ..')
 
-subprocess.getstatusoutput ('cd xml_files; cp ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems/*       ;cd ..')
+subprocess.getstatusoutput ('cd xml_files; cp ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems/*        .;cd ..')
 subprocess.getstatusoutput ('cd xml_files; cp ../../OpenExoplanetCatalogue/open_exoplanet_catalogue/systems_kepler/* .;cd ..')
 
-subprocess.getstatusoutput ('rm xml_files/EPIC?211901114.xml')
 subprocess.getstatusoutput ('rm xml_files/EPIC?201637175.xml')
 subprocess.getstatusoutput ('rm xml_files/KIC?12557548.xml')
 subprocess.getstatusoutput ('rm xml_files/SDSS?J1110+0116.xml')
@@ -67,8 +66,6 @@ subprocess.getstatusoutput ('rm xml_files/SIMP0136+0933.xml')
 subprocess.getstatusoutput ('rm xml_files/CFBDSIR2149.xml')
 subprocess.getstatusoutput ('rm xml_files/WISE?0855-0714.xml')
 subprocess.getstatusoutput ('rm xml_files/EPIC?204129699.xml')
-subprocess.getstatusoutput ('rm xml_files/EPIC?201637175.xml')
-subprocess.getstatusoutput ('rm xml_files/KOI-1192.xml')
 
 # This creates a list of all of the files in systems and systems_kepler.
 # If I can get this working in the 'for file' I won't need the silly
@@ -86,16 +83,20 @@ count = 0
 # Set up by grabbing the current date and then using the Time object
 # from astropy.time
 
-dateTime    = datetime.today()
-nowPST      = Time (dateTime, scale='utc')
+dateTime = datetime.today()
+nowPT    = Time (dateTime, scale='utc')
+
+print ('nowPT: ', nowPT, 'PT')
 
 dateTimeUTC = datetime.utcnow()
-now         = Time (dateTimeUTC, scale='utc')
+nowUTC      = Time (dateTimeUTC, scale='utc')
 
-# This will search for 2 days (timedelta(2))
+print ('nowUTC : ', nowUTC, 'UTC')
+
+# This will search for 4 days (timedelta(4))
 
 startTime = Time(datetime.now(),              scale='utc')
-endTime   = Time(datetime.now()+timedelta(2), scale='utc')
+endTime   = Time(datetime.now()+timedelta(3), scale='utc')
 
 print ('startTime: ', startTime)
 print ('endTime  : ', endTime)
@@ -103,9 +104,15 @@ print ('endTime  : ', endTime)
 observingMorningTime = '04'
 observingEveningTime = '17'
 
-minMagCutoff           = input ('Enter minimum magnitude   : ')
-minAltCutoff           = input ('Enter minimum altitude    : ')
-minPlanetStarAreaRatio = input ('Enter minimum area ration : ')
+print ('Hardwire minMagCutoff, minAltCutoff, and minPlanetStarAreaRatio to 10.0 0.0 0.01')
+
+minMagCutoff           = 10.75
+minAltCutoff           = 10.0
+minPlanetStarAreaRatio = 0.008
+
+#minMagCutoff           = input ('Enter minimum magnitude  : ')
+#minAltCutoff           = input ('Enter minimum altitude   : ')
+#minPlanetStarAreaRatio = input ('Enter minimum area ratio : ')
 
 # This reads into 'file' all of the files in the xml_files directory
 
@@ -130,15 +137,22 @@ for file in os.listdir('xml_files'):
             star = tree.find('.//star')
         except:
             print ('tree.find raised an exception')
+            print ('file name: ', file)
 
 # Look through all of the possible planets in a system.
 
+        try:
+            tmpX = star.findall('.//planet')
+        except:
+            print ('star.finalall raised an exception.')
+            print ('file name: ', file)
+            
         for planet in star.findall('.//planet'):
             if planet.findtext ('istransiting') == '1':
 
 # Get the magntiude of the star. Use the visual magnitude if it is available.
 # If not, use the 'B' magnitude and if that isn't available use the
-# 'J' magnitude.
+# 'J' magnitude. If none of these are avaiable use 20.0 as the magnitude.
 
                 if star.findtext('magV') != None:
                     mag = star.findtext('magV')
@@ -149,8 +163,20 @@ for file in os.listdir('xml_files'):
                         if star.findtext('magJ') != None:
                             mag = star.findtext('magJ')
                         else:
-                            mag = 0.0
-                            
+                            if star.findtext('magR') != None:
+                                mag = star.findtext('magR')
+                            else:
+                                if star.findtext('magI') != None:
+                                    mag = star.findtext('magI')
+                                else:
+                                    if star.findtext('magH') != None:
+                                        mag = star.findtext('magH')
+                                    else:
+                                        if star.findtext('magK') != None:
+                                            mag = star.findtext('magK')
+                                        else:
+                                            mag = 20.0
+
                 planetPeriod = planet.findtext('period')
 
                 # Look for a valid looking period, one that is not ''
@@ -175,7 +201,7 @@ for file in os.listdir('xml_files'):
 # the range of time specified in the time range.
 # It seems like this should be the start of the time range.
 
-                        delta  = now.jd - transitTimeBJD;
+                        delta  = nowUTC.jd - transitTimeBJD;
 
                         revolutionCount = delta / planetPeriod
 
@@ -192,14 +218,14 @@ for file in os.listdir('xml_files'):
                                                 format ='jd',
                                                 scale = 'utc');
 
-                        daysToTransit = nextTransit - now.jd
+                        daysToTransit = nextTransit - nowUTC.jd
 
 #
-# Change the time to PST by subtracting 8 hours from the UTC time
+# Change the time to PT by subtracting 8 hours (7 during DTS) from the UTC time
 #
 
-                        nextTransitTimePST = nextTransit - (1.0/24.0*8.0)
-                        nTTPST = Time (nextTransitTimePST,
+                        nextTransitTimePT = nextTransit - (1.0/24.0*7.0)
+                        nTTPT = Time (nextTransitTimePT,
                                        format='jd',
                                        scale='utc')
 
@@ -211,13 +237,21 @@ for file in os.listdir('xml_files'):
                                                   1.3914      * \
                                                   1000000
 
-                        planetRadius   = planet.findtext('radius')
-                        
+                        try:
+                            planetRadius   = planet.findtext('radius')
+                        except:
+                            print ('planet.findtext(radius) failed')
+                            print ('file name: ', file)
+                            
                         if (planetRadius == None):
                             planetRadius = 0.0
                         else:
-                            planetRadius = float(planetRadius) * 139822
-
+                            try:
+                                planetRadius = float(planetRadius) * 139822
+                            except:
+                                print ('float(planetRadius) failed')
+                                print ('file name: ', file)
+                                
                         if (starRadius != 0) and (planetRadius != 0):
                             starArea            = cmath.pi   * \
                                                   starRadius * \
@@ -229,8 +263,8 @@ for file in os.listdir('xml_files'):
                         else:
                             planetStarAreaRatio = 0
                             
-                        a = nextTransitTimePST
-                        b = nowPST.jd + 1
+                        a = nextTransitTimePT
+                        b = nowPT.jd + 1
                         c = a < b
 
 # d start off as false and is det to true if the time is in the specifed
@@ -238,22 +272,23 @@ for file in os.listdir('xml_files'):
 
                         d = False
                         
-                        if nTTPST.jd > startTime.jd:
-                            if nTTPST.jd < endTime.jd:
+                        if nTTPT.jd > startTime.jd:
+                            if nTTPT.jd < endTime.jd:
                                 d = True
 
 # e = sideral_time('apparent',longitude=None,model=None)
 
-                        observingPosition = EarthLocation(lat=34*u.deg,
-                                                          lon=-118*u.deg,
-                                                          height=500*u.m)  
+                        observingPosition = EarthLocation(lat   = (34+(49/60)+(32/3600))  * u.deg,
+                                                          lon   =-(119+(1/60)+(27/3600))  * u.deg,
+
+                                                          height=1621*u.m)  
 
                         observingNextTransitTime = Time(nextTransitTime.fits)
 
 
 # Eliminate objects based on
 # a) magnitude of the star must be great the 11th magnitude,
-# b) planetStarRation at least 0.01,
+# b) planetStarRatio at least 0.01,
 # c) variable 'd' (poorly named) is not true, that is the object will be
 #    eliminated if the transit is
 #    not within the specified time range
@@ -280,11 +315,11 @@ for file in os.listdir('xml_files'):
                                       AltAz(obstime=observingNextTransitTime,
                                             location=observingPosition))
 
-# Looking for hour of transit (PST). For now day time is between
+# Looking for hour of transit (PT). For now day time is between
 # 06 and 17 hours. Night would be defined as true if we are not in
 # this range:
 
-                        hour = nTTPST.fits[11:13];
+                        hour = nTTPT.fits[11:13];
 
                         if (hour > observingMorningTime and
                             hour < observingEveningTime):
@@ -293,39 +328,53 @@ for file in os.listdir('xml_files'):
                             night = True
                         
                         if (float(mag) < float(minMagCutoff))                     and \
-                           d                                               and \
+                           d                                                      and \
                            (planetStarAreaRatio >= float(minPlanetStarAreaRatio)) and \
                            (altAzi.alt.degree > float(minAltCutoff))              and \
                            night:
                             count = count + 1
 
                             print ('------------------')
+
                             print ('file name                : ', file)
+
                             print ('System name              : ',  \
                                    root.findtext('name'))
+
                             print ('Planet name              : ',  \
                                    planet.findtext('name'))
+
                             print ('Planet period            : ',  \
-                                   planet.findtext('period'))
+                                   "{:.1f}".format(float(planet.findtext('period'))))
+
                             print ('System Right Ascension   :  ', \
                                    root.findtext('rightascension'))
+
                             print ('System Declination       : ',  \
                                    root.findtext('declination'))
+
                             print ('System Magnitude         : ',  \
-                                   mag)
+                                   "{:.1f}".format(float(mag)))
+
                             print ('observingNextTransitTime : ',  \
-                                   observingNextTransitTime)
+                                   nTTPT.fits, 'PT')
+
                             print ('Azimuth                  : ',  \
-                                   altAzi.az.degree)
+                                   "{:.2f}".format(altAzi.az.degree))
+
                             print ('Altitude                 : ',  \
-                                   altAzi.alt.degree)
+                                   "{:.2f}".format(altAzi.alt.degree))
+
                             print ('Days until transit       : ',  \
-                                   daysToTransit)
-                            print ('nTTPST.jd                : ',  \
-                                   nTTPST.jd)
-                            print ('nTTPST.fits              : ',  \
-                                   nTTPST.fits, 'PST')
+                                   "{:.2f}".format(daysToTransit))
+                            
                             print ('Planet/Star area ratio   : ',  \
-                                   planetStarAreaRatio)
+                                   "{:.2f}".format(planetStarAreaRatio))
+
                             print ('count                    : ',  \
                                    count)
+
+                            print ('Description              : ',  \
+                                   planet.findtext('description'))
+
+
